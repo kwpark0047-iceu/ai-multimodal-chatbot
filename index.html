@@ -133,6 +133,7 @@
   <button class="top-btn" data-cat="dev">💻 <span class="label">AI 개발도구</span></button>
   <button class="top-btn" data-cat="productivity">⚡ <span class="label">AI 생산성</span></button>
   <button class="top-btn" data-cat="resource">📚 <span class="label">AI 리소스</span></button>
+  <button class="top-btn" data-cat="course">🎓 <span class="label">AI 강의</span></button>
 </header>
 
 <div class="layout">
@@ -149,7 +150,7 @@
 </div>
 
 <script>
-const UPDATED = '2026-06-11 (+100)';
+const UPDATED = '2026-06-11 (+100 · 강의)';
 
 const data = {
   assistant: {
@@ -377,6 +378,47 @@ const data = {
       { name:'LangChain Hub',    url:'https://smith.langchain.com/hub',  desc:'검증된 프롬프트·체인 공유 커뮤니티',                 icon:'🔗', tags:['community'],        color:'#1c7c54', isNew:true },
       { name:'AI News (TLDR)',   url:'https://tldr.tech/ai',             desc:'AI 업계 최신 뉴스 데일리 뉴스레터',                  icon:'📰', tags:['community'],        color:'#0ea5e9', isNew:true },
       { name:'Simon Willison',   url:'https://simonwillison.net',        desc:'AI 도구·LLM 심층 분석 블로그',                       icon:'✍️', tags:['community'],        color:'#7c3aed', isNew:true },
+    ]
+  },
+  course: {
+    label: 'AI 강의', icon: '🎓',
+    desc: 'Cursor · Windsurf · VS Code · Figma AI 도구 공식 문서·튜토리얼·강의 사이트 모음',
+    subs: {
+      all:      { label: '전체',       icon: '📋' },
+      cursor:   { label: 'Cursor',     icon: '🖱️' },
+      windsurf: { label: 'Windsurf',   icon: '🏄' },
+      vscode:   { label: 'VS Code',    icon: '💙' },
+      figma:    { label: 'Figma',      icon: '🎨' },
+      general:  { label: '종합 플랫폼', icon: '🌐' },
+    },
+    items: [
+      { name:'Cursor Docs',           url:'https://docs.cursor.com',                                  desc:'Cursor 공식 문서 — 기능·단축키·Agent 모드 완전 가이드',   icon:'🖱️', tags:['cursor'],   color:'#6366f1', isNew:true },
+      { name:'Cursor 101',            url:'https://cursor101.com',                                    desc:'Cursor AI 전문 강의·팁 모음 사이트',                       icon:'📘', tags:['cursor'],   color:'#4f46e5', isNew:true },
+      { name:'Cursor Forum',          url:'https://forum.cursor.com',                                 desc:'Cursor 공식 커뮤니티 포럼 — Q&A·노하우 공유',              icon:'💬', tags:['cursor'],   color:'#6366f1', isNew:true },
+      { name:'Cursor YouTube',        url:'https://www.youtube.com/@cursor-ai',                       desc:'Cursor 공식 유튜브 — 기능 튜토리얼·업데이트 영상',         icon:'▶️', tags:['cursor'],   color:'#ff0000', isNew:true },
+      { name:'Windsurf Docs',         url:'https://docs.codeium.com/windsurf',                        desc:'Windsurf 공식 문서 — 설치·Cascade·Flow 설정 가이드',       icon:'🏄', tags:['windsurf'], color:'#00c8a0', isNew:true },
+      { name:'Windsurf YouTube',      url:'https://www.youtube.com/@codeiumai',                       desc:'Codeium/Windsurf 공식 유튜브 — 기능 데모·튜토리얼',        icon:'▶️', tags:['windsurf'], color:'#00c8a0', isNew:true },
+      { name:'Codeium Discord',       url:'https://discord.gg/3XFf78nAx5',                            desc:'Windsurf·Codeium 공식 Discord 커뮤니티',                   icon:'🎮', tags:['windsurf'], color:'#5865f2', isNew:true },
+      { name:'Windsurf Blog',         url:'https://codeium.com/blog',                                 desc:'Windsurf 공식 블로그 — 업데이트·사용 팁·사례',             icon:'📝', tags:['windsurf'], color:'#00c8a0', isNew:true },
+      { name:'VS Code Learn',         url:'https://code.visualstudio.com/learn',                      desc:'Microsoft 공식 VS Code 인터랙티브 학습 튜토리얼',          icon:'💙', tags:['vscode'],   color:'#007acc', isNew:true },
+      { name:'VS Code Docs',          url:'https://code.visualstudio.com/docs',                       desc:'VS Code 공식 문서 — 확장·디버깅·Git·AI 기능 완전판',      icon:'📖', tags:['vscode'],   color:'#007acc', isNew:true },
+      { name:'Microsoft Learn VSCode',url:'https://learn.microsoft.com/en-us/training/browse/?products=vscode', desc:'Microsoft Learn 무료 VS Code 온라인 강의',    icon:'🎓', tags:['vscode'],   color:'#0078d4', isNew:true },
+      { name:'VS Code YouTube',       url:'https://www.youtube.com/@code',                            desc:'VS Code 공식 유튜브 — 팁·확장·AI 기능 소개',               icon:'▶️', tags:['vscode'],   color:'#ff0000', isNew:true },
+      { name:'VS Code Extension Pack',url:'https://marketplace.visualstudio.com/vscode',              desc:'VS Code 확장 마켓플레이스 — AI 확장 모음',                 icon:'🧩', tags:['vscode'],   color:'#007acc', isNew:true },
+      { name:'Figma Resource Library',url:'https://www.figma.com/resource-library/',                  desc:'Figma 공식 리소스 라이브러리 — UI 디자인 가이드',          icon:'🎨', tags:['figma'],    color:'#f24e1e', isNew:true },
+      { name:'Figma Help Center',     url:'https://help.figma.com',                                   desc:'Figma 공식 도움말 — 기능별 튜토리얼 전체 목록',            icon:'❓', tags:['figma'],    color:'#a259ff', isNew:true },
+      { name:'Figma YouTube',         url:'https://www.youtube.com/@Figma',                           desc:'Figma 공식 유튜브 — 디자인 튜토리얼·업데이트',             icon:'▶️', tags:['figma'],    color:'#ff0000', isNew:true },
+      { name:'Figma Community',       url:'https://www.figma.com/community',                          desc:'Figma 커뮤니티 — 무료 템플릿·플러그인·강의 파일',          icon:'👥', tags:['figma'],    color:'#0acf83', isNew:true },
+      { name:'Designlab Figma 101',   url:'https://designlab.com/figma-101-course/',                  desc:'Designlab 무료 Figma 101 기초 입문 강의',                  icon:'🏫', tags:['figma'],    color:'#7c3aed', isNew:true },
+      { name:'DeepLearning.AI',       url:'https://deeplearning.ai',                                  desc:'Andrew Ng AI 강의 — ChatGPT·LLM·생성 AI 프롬프트',        icon:'🧠', tags:['general'],  color:'#1d4ed8', isNew:true },
+      { name:'fast.ai',               url:'https://fast.ai',                                          desc:'실용적 딥러닝 무료 강의 — 코드 우선 top-down 방법론',      icon:'🏎️', tags:['general'],  color:'#dc2626', isNew:true },
+      { name:'Coursera AI',           url:'https://coursera.org/search?query=AI',                     desc:'Coursera AI·ML 전문 강의 — 수료증 취득 가능',              icon:'🎓', tags:['general'],  color:'#0056d2', isNew:true },
+      { name:'Udemy AI 강의',         url:'https://udemy.com/topic/artificial-intelligence/',          desc:'Udemy AI 강의 전체 — 최저가 할인 자주 제공',               icon:'📚', tags:['general'],  color:'#a435f0', isNew:true },
+      { name:'Fireship',              url:'https://www.youtube.com/@Fireship',                        desc:'AI·개발 트렌드 초압축 100초 요약 유튜브',                  icon:'🔥', tags:['general'],  color:'#ff6600', isNew:true },
+      { name:'roadmap.sh/ai',         url:'https://roadmap.sh/ai-engineer',                           desc:'AI 엔지니어 커리어 로드맵 — 단계별 학습 경로',             icon:'🗺️', tags:['general'],  color:'#14b8a6', isNew:true },
+      { name:'Learn Prompting',       url:'https://learnprompting.org',                               desc:'프롬프트 엔지니어링 무료 오픈소스 완전 강의',               icon:'💬', tags:['general'],  color:'#6366f1', isNew:true },
+      { name:'Google AI Courses',     url:'https://ai.google/education/',                             desc:'Google 공식 AI 교육 — ML·생성 AI 무료 과정',               icon:'🔵', tags:['general'],  color:'#4285f4', isNew:true },
+      { name:'Microsoft AI Learning', url:'https://learn.microsoft.com/en-us/ai/',                    desc:'Microsoft Learn AI 공식 학습 경로 모음',                   icon:'🪟', tags:['general'],  color:'#0078d4', isNew:true },
     ]
   }
 };
