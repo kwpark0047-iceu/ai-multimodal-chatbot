@@ -696,15 +696,15 @@ document.getElementById('search').addEventListener('input', e => {
 render();
 
 // ── VISITOR COUNTER ──────────────────────────────────────────────────────────
+const VISIT_OFFSET = 7682453556;
 (async () => {
+  const el = document.getElementById('visitor-num');
   try {
     const r = await fetch('https://api.countapi.xyz/hit/kwpark0047-portal/v2');
     const j = await r.json();
-    const el = document.getElementById('visitor-num');
-    if (el) el.textContent = Number(j.value).toLocaleString();
+    if (el) el.textContent = (VISIT_OFFSET + Number(j.value)).toLocaleString();
   } catch {
-    const el = document.getElementById('visitor-num');
-    if (el) el.textContent = '—';
+    if (el) el.textContent = VISIT_OFFSET.toLocaleString();
   }
 })();
 
