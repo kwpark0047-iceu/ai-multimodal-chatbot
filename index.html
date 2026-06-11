@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI 서비스 포털</title>
+  <title>AI 서비스 포털 — 2026</title>
   <style>
     :root {
       --bg: #0f1117;
@@ -106,6 +106,13 @@
     }
     .card-arrow { position: absolute; right: 16px; top: 20px; color: var(--text-muted); font-size: .85rem; opacity: 0; transition: opacity .2s; }
     .card:hover .card-arrow { opacity: 1; }
+    .badge-new {
+      position: absolute; right: 12px; bottom: 12px;
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      color: #fff; font-size: .6rem; font-weight: 800;
+      padding: 2px 7px; border-radius: 20px; letter-spacing: .05em;
+    }
+    .updated-info { font-size: .75rem; color: var(--text-muted); margin-top: 2px; }
 
     .empty { text-align: center; padding: 80px 20px; color: var(--text-muted); }
     .empty span { font-size: 3rem; display: block; margin-bottom: 12px; }
@@ -124,6 +131,7 @@
   <button class="top-btn active" data-cat="assistant">🤖 <span class="label">AI 어시스턴트</span></button>
   <button class="top-btn" data-cat="creative">🎨 <span class="label">AI 크리에이티브</span></button>
   <button class="top-btn" data-cat="dev">💻 <span class="label">AI 개발도구</span></button>
+  <button class="top-btn" data-cat="productivity">⚡ <span class="label">AI 생산성</span></button>
   <button class="top-btn" data-cat="resource">📚 <span class="label">AI 리소스</span></button>
 </header>
 
@@ -133,6 +141,7 @@
     <div class="section-header">
       <div class="section-title" id="section-title"></div>
       <div class="section-desc" id="section-desc"></div>
+      <div class="updated-info" id="updated-info"></div>
     </div>
     <div class="search-wrap"><input type="text" id="search" placeholder="서비스 검색..."></div>
     <div class="grid" id="grid"></div>
@@ -140,71 +149,113 @@
 </div>
 
 <script>
+const UPDATED = '2026-06-11';
+
 const data = {
   assistant: {
     label: 'AI 어시스턴트', icon: '🤖',
     desc: '대화형 AI, 챗봇, AI 검색 서비스 모음',
     subs: {
-      all:    { label: '전체', icon: '📋' },
+      all:    { label: '전체',       icon: '📋' },
       chat:   { label: '챗봇 / LLM', icon: '💬' },
-      search: { label: '검색 AI', icon: '🔍' },
+      search: { label: '검색 AI',    icon: '🔍' },
+      agent:  { label: 'AI 에이전트', icon: '🕹️' },
     },
     items: [
-      { name:'Claude',       url:'https://claude.ai',                  desc:'Anthropic의 안전하고 유용한 AI 어시스턴트',   icon:'🔮', tags:['chat'],   color:'#cc785c' },
-      { name:'ChatGPT',      url:'https://chatgpt.com',                desc:'OpenAI의 대화형 AI — GPT-4o 탑재',          icon:'🟢', tags:['chat'],   color:'#10a37f' },
-      { name:'Gemini',       url:'https://gemini.google.com',          desc:'Google의 멀티모달 대화형 AI',                icon:'✨', tags:['chat'],   color:'#4285f4' },
-      { name:'Grok',         url:'https://grok.com',                   desc:'xAI의 실시간 웹 연동 AI 어시스턴트',         icon:'⚡', tags:['chat'],   color:'#1a1a1a' },
-      { name:'Genspark',     url:'https://www.genspark.ai',            desc:'AI 에이전트 기반 차세대 검색 엔진',           icon:'🌟', tags:['chat','search'], color:'#6c63ff' },
-      { name:'Perplexity',   url:'https://perplexity.ai',              desc:'실시간 웹 검색 기반 AI 답변 엔진',            icon:'🔍', tags:['search'], color:'#20808d' },
-      { name:'Copilot',      url:'https://copilot.microsoft.com',      desc:'Microsoft의 GPT-4 기반 AI 어시스턴트',       icon:'💠', tags:['chat'],   color:'#0078d4' },
-      { name:'Le Chat',      url:'https://chat.mistral.ai',            desc:'Mistral AI의 오픈 모델 기반 챗봇',            icon:'🐱', tags:['chat'],   color:'#ff7000' },
-      { name:'Meta AI',      url:'https://www.meta.ai',                desc:'Meta의 Llama 기반 무료 AI 어시스턴트',        icon:'🌐', tags:['chat'],   color:'#0866ff' },
-      { name:'Phind',        url:'https://phind.com',                  desc:'개발자를 위한 AI 검색 엔진',                  icon:'🧩', tags:['search'], color:'#7c3aed' },
+      { name:'Claude',        url:'https://claude.ai',               desc:'Anthropic의 Claude 4 — 안전성과 추론 능력 최상위',     icon:'🔮', tags:['chat'],          color:'#cc785c' },
+      { name:'ChatGPT',       url:'https://chatgpt.com',             desc:'OpenAI GPT-4o / o3 탑재 대화·이미지·음성 AI',          icon:'🟢', tags:['chat'],          color:'#10a37f' },
+      { name:'Gemini',        url:'https://gemini.google.com',       desc:'Google Gemini 2.5 Pro — Deep Research 지원',           icon:'✨', tags:['chat','search'], color:'#4285f4', isNew:true },
+      { name:'Grok',          url:'https://grok.com',                desc:'xAI Grok 3 — X(트위터) 실시간 데이터 연동',            icon:'⚡', tags:['chat'],          color:'#1a1a1a', isNew:true },
+      { name:'Genspark',      url:'https://www.genspark.ai',         desc:'AI 에이전트 기반 Super Agent 검색 엔진',               icon:'🌟', tags:['chat','agent'],  color:'#6c63ff', isNew:true },
+      { name:'DeepSeek',      url:'https://chat.deepseek.com',       desc:'중국 최고 오픈소스 LLM — DeepSeek R2 추론 특화',       icon:'🐋', tags:['chat'],          color:'#1e40af', isNew:true },
+      { name:'Perplexity',    url:'https://perplexity.ai',           desc:'실시간 웹 검색 + 인용 출처 기반 AI 답변',              icon:'🔍', tags:['search'],        color:'#20808d' },
+      { name:'Copilot',       url:'https://copilot.microsoft.com',   desc:'Microsoft 365 통합 GPT-4o AI 어시스턴트',              icon:'💠', tags:['chat'],          color:'#0078d4' },
+      { name:'Le Chat',       url:'https://chat.mistral.ai',         desc:'Mistral AI 오픈 모델 — 유럽 대표 LLM',                 icon:'🐱', tags:['chat'],          color:'#ff7000' },
+      { name:'Meta AI',       url:'https://www.meta.ai',             desc:'Meta Llama 4 기반 무료 멀티모달 AI',                   icon:'🌐', tags:['chat'],          color:'#0866ff', isNew:true },
+      { name:'NotebookLM',    url:'https://notebooklm.google',       desc:'Google의 문서 기반 AI 리서치 & 팟캐스트 생성',         icon:'📓', tags:['agent'],         color:'#4285f4', isNew:true },
+      { name:'Phind',         url:'https://phind.com',               desc:'개발자 특화 AI 코드 검색 엔진',                        icon:'🧩', tags:['search'],        color:'#7c3aed' },
+      { name:'You.com',       url:'https://you.com',                 desc:'AI 에이전트 통합 검색 — Research·Write·Code 모드',     icon:'🔮', tags:['search','agent'], color:'#6d28d9', isNew:true },
     ]
   },
   creative: {
     label: 'AI 크리에이티브', icon: '🎨',
-    desc: '이미지·음악·영상 생성 AI 서비스 모음',
+    desc: '이미지·음악·영상·음성 생성 AI 서비스 모음',
     subs: {
       all:   { label: '전체',      icon: '📋' },
       image: { label: '이미지 생성', icon: '🖼️' },
       music: { label: '음악 생성',  icon: '🎵' },
       video: { label: '영상 생성',  icon: '🎬' },
+      voice: { label: '음성 생성',  icon: '🎙️' },
     },
     items: [
-      { name:'Whisk',          url:'https://labs.google/whisk',        desc:'Google의 이미지-투-이미지 AI 변환 도구',     icon:'🎭', tags:['image'], color:'#fbbc04' },
-      { name:'Midjourney',     url:'https://midjourney.com',           desc:'최고 품질의 AI 아트 이미지 생성',             icon:'🖼️', tags:['image'], color:'#5865f2' },
-      { name:'Adobe Firefly',  url:'https://firefly.adobe.com',        desc:'Adobe의 상업적으로 안전한 생성형 AI',         icon:'🦋', tags:['image'], color:'#ff0000' },
-      { name:'Ideogram',       url:'https://ideogram.ai',              desc:'텍스트 렌더링 특화 AI 이미지 생성',            icon:'💡', tags:['image'], color:'#6366f1' },
-      { name:'Leonardo AI',    url:'https://leonardo.ai',              desc:'게임·아트 특화 AI 이미지 생성 플랫폼',         icon:'🎮', tags:['image'], color:'#c026d3' },
-      { name:'Flux',           url:'https://flux1.ai',                 desc:'고품질 오픈소스 이미지 생성 모델',              icon:'⚗️', tags:['image'], color:'#0ea5e9' },
-      { name:'SUNO',           url:'https://suno.com',                 desc:'텍스트로 완성도 높은 노래를 생성',             icon:'🎵', tags:['music'], color:'#7c3aed' },
-      { name:'Udio',           url:'https://udio.com',                 desc:'AI 음악·오디오 생성 플랫폼',                   icon:'🎶', tags:['music'], color:'#059669' },
-      { name:'Runway',         url:'https://runwayml.com',             desc:'AI 영상 편집·생성 전문 도구 Gen-3',            icon:'🎬', tags:['video'], color:'#dc2626' },
-      { name:'Pika',           url:'https://pika.art',                 desc:'텍스트·이미지로 영상을 생성하는 AI',           icon:'✨', tags:['video'], color:'#7c3aed' },
-      { name:'Kling AI',       url:'https://klingai.com',              desc:'고품질 AI 영상 생성 — 5초·10초 지원',         icon:'🎥', tags:['video'], color:'#1e293b' },
-      { name:'Sora',           url:'https://openai.com/sora',          desc:'OpenAI의 텍스트-투-비디오 AI 모델',           icon:'🌊', tags:['video'], color:'#10a37f' },
+      { name:'Whisk',           url:'https://labs.google/whisk',      desc:'Google Whisk — 이미지+프롬프트로 새 이미지 합성',      icon:'🎭', tags:['image'],        color:'#fbbc04' },
+      { name:'Midjourney',      url:'https://midjourney.com',         desc:'Midjourney V7 — 최고 품질 AI 아트 이미지',             icon:'🖼️', tags:['image'],       color:'#5865f2', isNew:true },
+      { name:'Adobe Firefly',   url:'https://firefly.adobe.com',      desc:'상업적으로 안전한 Adobe 생성형 AI',                    icon:'🦋', tags:['image'],        color:'#ff0000' },
+      { name:'Ideogram',        url:'https://ideogram.ai',            desc:'텍스트 렌더링 특화 — Ideogram 3.0',                   icon:'💡', tags:['image'],        color:'#6366f1', isNew:true },
+      { name:'Leonardo AI',     url:'https://leonardo.ai',            desc:'게임·아트 특화 AI 이미지 생성',                        icon:'🎮', tags:['image'],        color:'#c026d3' },
+      { name:'Flux',            url:'https://flux1.ai',               desc:'Black Forest Labs 고품질 오픈소스 이미지 모델',         icon:'⚗️', tags:['image'],       color:'#0ea5e9' },
+      { name:'Canva AI',        url:'https://canva.com',              desc:'디자인+AI 이미지·영상·프레젠테이션 통합 플랫폼',       icon:'🎨', tags:['image'],        color:'#00c4cc', isNew:true },
+      { name:'SUNO',            url:'https://suno.com',               desc:'SUNO v4 — 텍스트로 완성도 높은 노래 생성',             icon:'🎵', tags:['music'],        color:'#7c3aed', isNew:true },
+      { name:'Udio',            url:'https://udio.com',               desc:'AI 음악·오디오 생성 — 세밀한 스타일 제어',             icon:'🎶', tags:['music'],        color:'#059669' },
+      { name:'Runway',          url:'https://runwayml.com',           desc:'Runway Gen-3 Alpha — 영상 편집·생성',                  icon:'🎬', tags:['video'],        color:'#dc2626' },
+      { name:'Pika',            url:'https://pika.art',               desc:'Pika 2.2 — 텍스트·이미지→영상',                       icon:'✨', tags:['video'],        color:'#7c3aed', isNew:true },
+      { name:'Kling AI',        url:'https://klingai.com',            desc:'Kling 2.0 — 고품질 5·10초 AI 영상',                   icon:'🎥', tags:['video'],        color:'#1e293b', isNew:true },
+      { name:'Sora',            url:'https://sora.com',               desc:'OpenAI Sora — 텍스트→고품질 영상',                    icon:'🌊', tags:['video'],        color:'#10a37f' },
+      { name:'Google Veo 3',    url:'https://deepmind.google/technologies/veo', desc:'Google DeepMind Veo 3 — 음성 포함 영상 생성', icon:'🌀', tags:['video'],  color:'#4285f4', isNew:true },
+      { name:'Luma Dream',      url:'https://lumalabs.ai/dream-machine', desc:'Luma Dream Machine — 고화질 영상 생성',            icon:'💫', tags:['video'],        color:'#6d28d9', isNew:true },
+      { name:'ElevenLabs',      url:'https://elevenlabs.io',          desc:'최고 품질 AI 음성 합성 및 클로닝',                     icon:'🎙️', tags:['voice'],       color:'#0f172a', isNew:true },
+      { name:'HeyGen',          url:'https://heygen.com',             desc:'AI 아바타 영상 자동 생성 플랫폼',                      icon:'🧑‍💼', tags:['video','voice'], color:'#0ea5e9', isNew:true },
     ]
   },
   dev: {
     label: 'AI 개발도구', icon: '💻',
-    desc: 'AI 기반 앱 빌더, 코드 에디터, 개발 도우미 모음',
+    desc: 'AI 기반 앱 빌더, 코드 에디터, 워크플로우 자동화 모음',
     subs: {
-      all:     { label: '전체',         icon: '📋' },
-      builder: { label: 'UI / 앱 빌더', icon: '🏗️' },
-      code:    { label: '코드 어시스턴트', icon: '🖥️' },
+      all:      { label: '전체',          icon: '📋' },
+      builder:  { label: 'UI / 앱 빌더',  icon: '🏗️' },
+      code:     { label: '코드 어시스턴트', icon: '🖥️' },
+      workflow: { label: '워크플로우',     icon: '🔗' },
     },
     items: [
-      { name:'Lovable',         url:'https://lovable.dev',                      desc:'AI로 풀스택 웹앱을 대화로 빌드',            icon:'💖', tags:['builder'], color:'#ec4899' },
-      { name:'V0',              url:'https://v0.dev',                           desc:'Vercel의 AI UI 컴포넌트 생성기',             icon:'▲',  tags:['builder'], color:'#e2e8f0' },
-      { name:'Bolt.new',        url:'https://bolt.new',                         desc:'브라우저에서 바로 AI 풀스택 개발',            icon:'⚡', tags:['builder'], color:'#f59e0b' },
-      { name:'Replit',          url:'https://replit.com',                       desc:'AI 에이전트 내장 클라우드 IDE',               icon:'🔄', tags:['builder','code'], color:'#f26207' },
-      { name:'Cursor',          url:'https://cursor.sh',                        desc:'AI 자동완성·수정 특화 코드 에디터',           icon:'🖱️', tags:['code'],    color:'#6366f1' },
-      { name:'GitHub Copilot',  url:'https://github.com/features/copilot',      desc:'GitHub 공식 AI 코딩 어시스턴트',             icon:'🐙', tags:['code'],    color:'#24292e' },
-      { name:'Windsurf',        url:'https://codeium.com/windsurf',             desc:'Codeium의 AI 통합 개발 환경',                icon:'🏄', tags:['code'],    color:'#00c8a0' },
-      { name:'Claude Code',     url:'https://claude.ai/code',                   desc:'터미널 기반 Anthropic AI 코딩 에이전트',     icon:'🔮', tags:['code'],    color:'#cc785c' },
-      { name:'Devin',           url:'https://devin.ai',                         desc:'완전 자율 AI 소프트웨어 엔지니어',            icon:'🤖', tags:['code'],    color:'#3b82f6' },
-      { name:'Streamlit',       url:'https://streamlit.io',                     desc:'Python으로 AI 앱을 빠르게 배포',             icon:'🎈', tags:['builder'], color:'#ff4b4b' },
+      { name:'Lovable',        url:'https://lovable.dev',                   desc:'AI로 풀스택 웹앱을 대화만으로 빌드',              icon:'💖', tags:['builder'],         color:'#ec4899' },
+      { name:'V0',             url:'https://v0.dev',                        desc:'Vercel AI UI 컴포넌트·Next.js 앱 생성',           icon:'▲',  tags:['builder'],         color:'#e2e8f0' },
+      { name:'Bolt.new',       url:'https://bolt.new',                      desc:'브라우저에서 바로 AI 풀스택 개발',                 icon:'⚡', tags:['builder'],         color:'#f59e0b' },
+      { name:'Replit',         url:'https://replit.com',                    desc:'AI 에이전트 내장 클라우드 IDE & 배포',              icon:'🔄', tags:['builder','code'],  color:'#f26207' },
+      { name:'Cursor',         url:'https://cursor.sh',                     desc:'AI 자동완성·수정·Agent 특화 코드 에디터',          icon:'🖱️', tags:['code'],            color:'#6366f1' },
+      { name:'GitHub Copilot', url:'https://github.com/features/copilot',   desc:'GitHub 공식 AI 코딩 어시스턴트 — Agent 모드',     icon:'🐙', tags:['code'],            color:'#24292e', isNew:true },
+      { name:'Windsurf',       url:'https://codeium.com/windsurf',          desc:'Codeium의 AI 통합 개발 환경 — Cascade 에이전트',   icon:'🏄', tags:['code'],            color:'#00c8a0' },
+      { name:'Claude Code',    url:'https://claude.ai/code',                desc:'터미널 기반 Anthropic AI 코딩 CLI 에이전트',        icon:'🔮', tags:['code'],            color:'#cc785c', isNew:true },
+      { name:'Devin',          url:'https://devin.ai',                      desc:'완전 자율 AI 소프트웨어 엔지니어',                  icon:'🤖', tags:['code'],            color:'#3b82f6' },
+      { name:'Streamlit',      url:'https://streamlit.io',                  desc:'Python으로 AI 데이터 앱을 빠르게 배포',            icon:'🎈', tags:['builder'],         color:'#ff4b4b' },
+      { name:'Dify',           url:'https://dify.ai',                       desc:'노코드 LLM 앱 빌더 — RAG·Agent·워크플로우',       icon:'🧩', tags:['builder','workflow'], color:'#6366f1', isNew:true },
+      { name:'n8n',            url:'https://n8n.io',                        desc:'AI 내장 오픈소스 워크플로우 자동화',               icon:'🔗', tags:['workflow'],        color:'#ea4b71', isNew:true },
+      { name:'LangChain',      url:'https://python.langchain.com',          desc:'LLM 앱 개발 프레임워크',                           icon:'🦜', tags:['workflow'],        color:'#1c7c54', isNew:true },
+      { name:'Supabase',       url:'https://supabase.com',                  desc:'AI 기능 내장 오픈소스 Firebase 대안',              icon:'🟩', tags:['builder'],         color:'#3ecf8e', isNew:true },
+    ]
+  },
+  productivity: {
+    label: 'AI 생산성', icon: '⚡',
+    desc: '업무·문서·발표·회의·학습을 돕는 AI 생산성 도구 모음',
+    subs: {
+      all:      { label: '전체',           icon: '📋' },
+      writing:  { label: '글쓰기 / 문서',   icon: '✍️' },
+      present:  { label: '발표 / 디자인',   icon: '📊' },
+      meeting:  { label: '회의 / 요약',     icon: '📝' },
+      learning: { label: '학습 / 리서치',   icon: '📖' },
+    },
+    items: [
+      { name:'Notion AI',     url:'https://notion.com',              desc:'Notion 내장 AI — 문서 요약·번역·자동 작성',           icon:'⬛', tags:['writing'],         color:'#000000', isNew:true },
+      { name:'Gamma',         url:'https://gamma.app',               desc:'AI 프레젠테이션·문서·웹사이트 자동 생성',              icon:'🟣', tags:['present'],         color:'#7c3aed', isNew:true },
+      { name:'Beautiful.ai',  url:'https://beautiful.ai',            desc:'AI 자동 레이아웃 프레젠테이션 도구',                   icon:'💎', tags:['present'],         color:'#e11d48' },
+      { name:'Tome',          url:'https://tome.app',                desc:'AI 스토리텔링 프레젠테이션',                           icon:'📖', tags:['present'],         color:'#7c3aed' },
+      { name:'Otter.ai',      url:'https://otter.ai',                desc:'AI 회의 실시간 전사·요약·액션아이템 추출',             icon:'🦦', tags:['meeting'],         color:'#336df5', isNew:true },
+      { name:'Fireflies.ai',  url:'https://fireflies.ai',            desc:'AI 회의 녹음·요약·분석 플랫폼',                        icon:'🦋', tags:['meeting'],         color:'#6366f1', isNew:true },
+      { name:'Grammarly',     url:'https://grammarly.com',           desc:'AI 기반 영문 교정·문체 개선·번역',                     icon:'✅', tags:['writing'],         color:'#15c39a' },
+      { name:'Jasper',        url:'https://jasper.ai',               desc:'마케팅·콘텐츠 특화 AI 글쓰기 도구',                    icon:'✍️', tags:['writing'],         color:'#ff7043' },
+      { name:'Copy.ai',       url:'https://copy.ai',                 desc:'AI 마케팅 카피·이메일·SNS 콘텐츠 생성',               icon:'📋', tags:['writing'],         color:'#7c3aed' },
+      { name:'Quillbot',      url:'https://quillbot.com',            desc:'AI 패러프레이징·요약·문법 교정',                       icon:'🖊️', tags:['writing'],        color:'#00c897' },
+      { name:'Elicit',        url:'https://elicit.com',              desc:'AI 학술 논문 리서치 & 데이터 추출',                    icon:'🔬', tags:['learning'],        color:'#3b82f6', isNew:true },
+      { name:'Consensus',     url:'https://consensus.app',           desc:'AI 기반 논문 검색 & 과학적 근거 요약',                 icon:'📚', tags:['learning'],        color:'#0ea5e9', isNew:true },
     ]
   },
   resource: {
@@ -217,16 +268,20 @@ const data = {
       company:   { label: 'AI 기업',   icon: '🏢' },
     },
     items: [
-      { name:'Hugging Face',     url:'https://huggingface.co',          desc:'세계 최대 AI 모델·데이터셋 허브',               icon:'🤗', tags:['hub','community'], color:'#ff9a00' },
-      { name:'GitHub',           url:'https://github.com',              desc:'코드 저장소 & AI 프로젝트 협업 플랫폼',         icon:'🐙', tags:['community'],       color:'#24292e' },
-      { name:'Ollama',           url:'https://ollama.com',              desc:'로컬 PC에서 LLM을 쉽게 실행',                  icon:'🦙', tags:['hub'],             color:'#1a1a1a' },
-      { name:'Papers With Code', url:'https://paperswithcode.com',      desc:'ML 논문과 구현 코드를 한곳에서',               icon:'📄', tags:['community'],       color:'#21cbce' },
-      { name:'Kaggle',           url:'https://kaggle.com',              desc:'데이터사이언스 경진대회 & 노트북',              icon:'🏆', tags:['community'],       color:'#20beff' },
-      { name:'OpenAI',           url:'https://openai.com',              desc:'ChatGPT · DALL-E · Sora 개발사',              icon:'🟢', tags:['company'],         color:'#10a37f' },
-      { name:'Anthropic',        url:'https://anthropic.com',           desc:'Claude AI 개발 AI 안전 연구 기업',             icon:'🔮', tags:['company'],         color:'#cc785c' },
-      { name:'Google DeepMind',  url:'https://deepmind.google',         desc:'Google 산하 세계 최고 AI 연구소',              icon:'🧠', tags:['company'],         color:'#4285f4' },
-      { name:'Mistral AI',       url:'https://mistral.ai',              desc:'유럽의 오픈 LLM 선도 기업',                    icon:'🌬️', tags:['company'],        color:'#ff7000' },
-      { name:'Together AI',      url:'https://together.ai',             desc:'오픈소스 모델 API·파인튜닝 플랫폼',            icon:'🤝', tags:['hub'],             color:'#6366f1' },
+      { name:'Hugging Face',     url:'https://huggingface.co',          desc:'세계 최대 AI 모델·데이터셋·Spaces 허브',             icon:'🤗', tags:['hub','community'], color:'#ff9a00' },
+      { name:'GitHub',           url:'https://github.com',              desc:'코드 저장소 & AI 프로젝트 협업 플랫폼',             icon:'🐙', tags:['community'],        color:'#24292e' },
+      { name:'Ollama',           url:'https://ollama.com',              desc:'로컬 PC에서 LLM을 한 줄 명령으로 실행',             icon:'🦙', tags:['hub'],              color:'#1a1a1a' },
+      { name:'LM Studio',        url:'https://lmstudio.ai',             desc:'GUI로 로컬 LLM 다운로드 & 실행',                    icon:'🖥️', tags:['hub'],             color:'#6366f1', isNew:true },
+      { name:'Papers With Code', url:'https://paperswithcode.com',      desc:'ML 논문 + 구현 코드를 한곳에서',                    icon:'📄', tags:['community'],        color:'#21cbce' },
+      { name:'Kaggle',           url:'https://kaggle.com',              desc:'데이터사이언스 경진대회 & 노트북 허브',              icon:'🏆', tags:['community'],        color:'#20beff' },
+      { name:'OpenAI',           url:'https://openai.com',              desc:'ChatGPT · DALL-E · Sora · o3 개발사',               icon:'🟢', tags:['company'],          color:'#10a37f' },
+      { name:'Anthropic',        url:'https://anthropic.com',           desc:'Claude 4 개발 AI 안전 연구 기업',                   icon:'🔮', tags:['company'],          color:'#cc785c', isNew:true },
+      { name:'Google DeepMind',  url:'https://deepmind.google',         desc:'Gemini · Veo · AlphaFold 등 Google AI 연구소',     icon:'🧠', tags:['company'],          color:'#4285f4' },
+      { name:'xAI',              url:'https://x.ai',                    desc:'Elon Musk의 Grok 개발사',                           icon:'⚡', tags:['company'],          color:'#1a1a1a', isNew:true },
+      { name:'DeepSeek',         url:'https://deepseek.com',            desc:'중국 AI 스타트업 — R2 오픈소스 추론 모델',          icon:'🐋', tags:['company','hub'],    color:'#1e40af', isNew:true },
+      { name:'Mistral AI',       url:'https://mistral.ai',              desc:'유럽 대표 오픈 LLM — Mistral Large 2',             icon:'🌬️', tags:['company'],         color:'#ff7000' },
+      { name:'Together AI',      url:'https://together.ai',             desc:'오픈소스 모델 API & 파인튜닝 플랫폼',               icon:'🤝', tags:['hub'],              color:'#6366f1' },
+      { name:'Cohere',           url:'https://cohere.com',              desc:'기업용 LLM API & Command R+ 모델',                  icon:'🌊', tags:['company'],          color:'#3b82f6', isNew:true },
     ]
   }
 };
@@ -235,7 +290,13 @@ let curCat = 'assistant';
 let curSub = 'all';
 let query  = '';
 
-const tagMap = { chat:'챗봇 / LLM', search:'검색 AI', image:'이미지 생성', music:'음악 생성', video:'영상 생성', builder:'UI / 앱 빌더', code:'코드 어시스턴트', hub:'모델 허브', community:'커뮤니티', company:'AI 기업' };
+const tagMap = {
+  chat:'챗봇 / LLM', search:'검색 AI', agent:'AI 에이전트',
+  image:'이미지 생성', music:'음악 생성', video:'영상 생성', voice:'음성 생성',
+  builder:'UI / 앱 빌더', code:'코드 어시스턴트', workflow:'워크플로우',
+  writing:'글쓰기 / 문서', present:'발표 / 디자인', meeting:'회의 / 요약', learning:'학습 / 리서치',
+  hub:'모델 허브', community:'커뮤니티', company:'AI 기업',
+};
 
 // HTML 이스케이프 — innerHTML에 외부 데이터를 넣을 때 반드시 사용
 function esc(str) {
@@ -292,6 +353,7 @@ function renderSidebar() {
 function renderHeader() {
   document.getElementById('section-title').textContent = `${data[curCat].icon} ${data[curCat].label}`;
   document.getElementById('section-desc').textContent  = data[curCat].desc;
+  document.getElementById('updated-info').textContent  = `🗓 마지막 업데이트: ${UPDATED} · 총 ${data[curCat].items.length}개 서비스`;
 }
 
 function makeCard(item) {
@@ -335,6 +397,13 @@ function makeCard(item) {
   const arrow = document.createElement('span');
   arrow.className = 'card-arrow';
   arrow.textContent = '↗';
+
+  if (item.isNew) {
+    const badge = document.createElement('span');
+    badge.className = 'badge-new';
+    badge.textContent = 'NEW';
+    a.appendChild(badge);
+  }
 
   a.append(top, desc, tags, arrow);
   return a;
