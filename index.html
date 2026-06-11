@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 서비스 포털</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d2e;
+      --surface2: #242740;
+      --border: #2e3250;
+      --accent: #6366f1;
+      --accent2: #818cf8;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --top-h: 64px;
+      --side-w: 200px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; }
+
+    /* ── TOP NAV ── */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; height: var(--top-h);
+      background: rgba(15,17,23,.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 24px; gap: 8px; z-index: 100;
+    }
+    .logo { font-size: 1.2rem; font-weight: 700; margin-right: 24px;
+      background: linear-gradient(135deg, #6366f1, #a78bfa, #38bdf8);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; white-space: nowrap; }
+    .top-btn {
+      padding: 8px 18px; border-radius: 8px; border: 1px solid var(--border);
+      background: transparent; color: var(--text-muted); font-size: .9rem; cursor: pointer;
+      transition: all .2s; white-space: nowrap;
+    }
+    .top-btn:hover { background: var(--surface2); color: var(--text); }
+    .top-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+
+    /* ── LAYOUT ── */
+    .layout { display: flex; margin-top: var(--top-h); min-height: calc(100vh - var(--top-h)); }
+
+    /* ── SIDEBAR ── */
+    aside {
+      width: var(--side-w); flex-shrink: 0; position: sticky; top: var(--top-h);
+      height: calc(100vh - var(--top-h)); overflow-y: auto;
+      background: var(--surface); border-right: 1px solid var(--border);
+      padding: 20px 12px;
+    }
+    .side-label { font-size: .7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--text-muted); padding: 0 8px 10px; }
+    .side-btn {
+      display: flex; align-items: center; gap: 8px; width: 100%;
+      padding: 9px 12px; border-radius: 8px; border: none;
+      background: transparent; color: var(--text-muted); font-size: .875rem;
+      cursor: pointer; transition: all .15s; text-align: left;
+    }
+    .side-btn:hover { background: var(--surface2); color: var(--text); }
+    .side-btn.active { background: rgba(99,102,241,.15); color: var(--accent2); font-weight: 600; }
+    .side-count { margin-left: auto; background: var(--surface2); color: var(--text-muted);
+      font-size: .7rem; padding: 2px 7px; border-radius: 20px; }
+
+    /* ── MAIN ── */
+    main { flex: 1; padding: 28px 32px; overflow: auto; }
+    .section-header { margin-bottom: 24px; }
+    .section-title { font-size: 1.5rem; font-weight: 700; }
+    .section-desc { color: var(--text-muted); font-size: .9rem; margin-top: 4px; }
+
+    /* ── SEARCH ── */
+    .search-wrap { position: relative; margin-bottom: 28px; max-width: 400px; }
+    .search-wrap input {
+      width: 100%; padding: 10px 16px 10px 40px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text); font-size: .9rem; outline: none; transition: border .2s;
+    }
+    .search-wrap input:focus { border-color: var(--accent); }
+    .search-wrap::before { content: '🔍'; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: .85rem; }
+
+    /* ── CARDS ── */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px; cursor: pointer; text-decoration: none; color: inherit;
+      transition: transform .2s, box-shadow .2s, border-color .2s;
+      display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden;
+    }
+    .card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: var(--card-color, var(--accent)); opacity: .8;
+    }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,.4); border-color: var(--accent); }
+    .card-top { display: flex; align-items: center; gap: 12px; }
+    .card-icon {
+      width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center;
+      justify-content: center; font-size: 1.4rem; flex-shrink: 0;
+      background: rgba(255,255,255,.06);
+    }
+    .card-name { font-weight: 700; font-size: 1rem; }
+    .card-url { font-size: .72rem; color: var(--text-muted); margin-top: 1px; }
+    .card-desc { font-size: .82rem; color: var(--text-muted); line-height: 1.5; flex: 1; }
+    .card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      font-size: .68rem; padding: 3px 8px; border-radius: 20px;
+      background: rgba(99,102,241,.15); color: var(--accent2); font-weight: 500;
+    }
+    .card-arrow { position: absolute; right: 16px; top: 20px; color: var(--text-muted); font-size: .85rem; opacity: 0; transition: opacity .2s; }
+    .card:hover .card-arrow { opacity: 1; }
+
+    .empty { text-align: center; padding: 80px 20px; color: var(--text-muted); }
+    .empty span { font-size: 3rem; display: block; margin-bottom: 12px; }
+
+    @media (max-width: 768px) {
+      aside { display: none; }
+      main { padding: 20px 16px; }
+      .top-btn span.label { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🚀 AI Portal</div>
+  <button class="top-btn active" data-cat="assistant">🤖 <span class="label">AI 어시스턴트</span></button>
+  <button class="top-btn" data-cat="creative">🎨 <span class="label">AI 크리에이티브</span></button>
+  <button class="top-btn" data-cat="dev">💻 <span class="label">AI 개발도구</span></button>
+  <button class="top-btn" data-cat="resource">📚 <span class="label">AI 리소스</span></button>
+</header>
+
+<div class="layout">
+  <aside id="sidebar"></aside>
+  <main>
+    <div class="section-header">
+      <div class="section-title" id="section-title"></div>
+      <div class="section-desc" id="section-desc"></div>
+    </div>
+    <div class="search-wrap"><input type="text" id="search" placeholder="서비스 검색..."></div>
+    <div class="grid" id="grid"></div>
+  </main>
+</div>
+
+<script>
+const data = {
+  assistant: {
+    label: 'AI 어시스턴트', icon: '🤖',
+    desc: '대화형 AI, 챗봇, AI 검색 서비스 모음',
+    subs: {
+      all:    { label: '전체', icon: '📋' },
+      chat:   { label: '챗봇 / LLM', icon: '💬' },
+      search: { label: '검색 AI', icon: '🔍' },
+    },
+    items: [
+      { name:'Claude',       url:'https://claude.ai',                  desc:'Anthropic의 안전하고 유용한 AI 어시스턴트',   icon:'🔮', tags:['chat'],   color:'#cc785c' },
+      { name:'ChatGPT',      url:'https://chatgpt.com',                desc:'OpenAI의 대화형 AI — GPT-4o 탑재',          icon:'🟢', tags:['chat'],   color:'#10a37f' },
+      { name:'Gemini',       url:'https://gemini.google.com',          desc:'Google의 멀티모달 대화형 AI',                icon:'✨', tags:['chat'],   color:'#4285f4' },
+      { name:'Grok',         url:'https://grok.com',                   desc:'xAI의 실시간 웹 연동 AI 어시스턴트',         icon:'⚡', tags:['chat'],   color:'#1a1a1a' },
+      { name:'Genspark',     url:'https://www.genspark.ai',            desc:'AI 에이전트 기반 차세대 검색 엔진',           icon:'🌟', tags:['chat','search'], color:'#6c63ff' },
+      { name:'Perplexity',   url:'https://perplexity.ai',              desc:'실시간 웹 검색 기반 AI 답변 엔진',            icon:'🔍', tags:['search'], color:'#20808d' },
+      { name:'Copilot',      url:'https://copilot.microsoft.com',      desc:'Microsoft의 GPT-4 기반 AI 어시스턴트',       icon:'💠', tags:['chat'],   color:'#0078d4' },
+      { name:'Le Chat',      url:'https://chat.mistral.ai',            desc:'Mistral AI의 오픈 모델 기반 챗봇',            icon:'🐱', tags:['chat'],   color:'#ff7000' },
+      { name:'Meta AI',      url:'https://www.meta.ai',                desc:'Meta의 Llama 기반 무료 AI 어시스턴트',        icon:'🌐', tags:['chat'],   color:'#0866ff' },
+      { name:'Phind',        url:'https://phind.com',                  desc:'개발자를 위한 AI 검색 엔진',                  icon:'🧩', tags:['search'], color:'#7c3aed' },
+    ]
+  },
+  creative: {
+    label: 'AI 크리에이티브', icon: '🎨',
+    desc: '이미지·음악·영상 생성 AI 서비스 모음',
+    subs: {
+      all:   { label: '전체',      icon: '📋' },
+      image: { label: '이미지 생성', icon: '🖼️' },
+      music: { label: '음악 생성',  icon: '🎵' },
+      video: { label: '영상 생성',  icon: '🎬' },
+    },
+    items: [
+      { name:'Whisk',          url:'https://labs.google/whisk',        desc:'Google의 이미지-투-이미지 AI 변환 도구',     icon:'🎭', tags:['image'], color:'#fbbc04' },
+      { name:'Midjourney',     url:'https://midjourney.com',           desc:'최고 품질의 AI 아트 이미지 생성',             icon:'🖼️', tags:['image'], color:'#5865f2' },
+      { name:'Adobe Firefly',  url:'https://firefly.adobe.com',        desc:'Adobe의 상업적으로 안전한 생성형 AI',         icon:'🦋', tags:['image'], color:'#ff0000' },
+      { name:'Ideogram',       url:'https://ideogram.ai',              desc:'텍스트 렌더링 특화 AI 이미지 생성',            icon:'💡', tags:['image'], color:'#6366f1' },
+      { name:'Leonardo AI',    url:'https://leonardo.ai',              desc:'게임·아트 특화 AI 이미지 생성 플랫폼',         icon:'🎮', tags:['image'], color:'#c026d3' },
+      { name:'Flux',           url:'https://flux1.ai',                 desc:'고품질 오픈소스 이미지 생성 모델',              icon:'⚗️', tags:['image'], color:'#0ea5e9' },
+      { name:'SUNO',           url:'https://suno.com',                 desc:'텍스트로 완성도 높은 노래를 생성',             icon:'🎵', tags:['music'], color:'#7c3aed' },
+      { name:'Udio',           url:'https://udio.com',                 desc:'AI 음악·오디오 생성 플랫폼',                   icon:'🎶', tags:['music'], color:'#059669' },
+      { name:'Runway',         url:'https://runwayml.com',             desc:'AI 영상 편집·생성 전문 도구 Gen-3',            icon:'🎬', tags:['video'], color:'#dc2626' },
+      { name:'Pika',           url:'https://pika.art',                 desc:'텍스트·이미지로 영상을 생성하는 AI',           icon:'✨', tags:['video'], color:'#7c3aed' },
+      { name:'Kling AI',       url:'https://klingai.com',              desc:'고품질 AI 영상 생성 — 5초·10초 지원',         icon:'🎥', tags:['video'], color:'#1e293b' },
+      { name:'Sora',           url:'https://openai.com/sora',          desc:'OpenAI의 텍스트-투-비디오 AI 모델',           icon:'🌊', tags:['video'], color:'#10a37f' },
+    ]
+  },
+  dev: {
+    label: 'AI 개발도구', icon: '💻',
+    desc: 'AI 기반 앱 빌더, 코드 에디터, 개발 도우미 모음',
+    subs: {
+      all:     { label: '전체',         icon: '📋' },
+      builder: { label: 'UI / 앱 빌더', icon: '🏗️' },
+      code:    { label: '코드 어시스턴트', icon: '🖥️' },
+    },
+    items: [
+      { name:'Lovable',         url:'https://lovable.dev',                      desc:'AI로 풀스택 웹앱을 대화로 빌드',            icon:'💖', tags:['builder'], color:'#ec4899' },
+      { name:'V0',              url:'https://v0.dev',                           desc:'Vercel의 AI UI 컴포넌트 생성기',             icon:'▲',  tags:['builder'], color:'#e2e8f0' },
+      { name:'Bolt.new',        url:'https://bolt.new',                         desc:'브라우저에서 바로 AI 풀스택 개발',            icon:'⚡', tags:['builder'], color:'#f59e0b' },
+      { name:'Replit',          url:'https://replit.com',                       desc:'AI 에이전트 내장 클라우드 IDE',               icon:'🔄', tags:['builder','code'], color:'#f26207' },
+      { name:'Cursor',          url:'https://cursor.sh',                        desc:'AI 자동완성·수정 특화 코드 에디터',           icon:'🖱️', tags:['code'],    color:'#6366f1' },
+      { name:'GitHub Copilot',  url:'https://github.com/features/copilot',      desc:'GitHub 공식 AI 코딩 어시스턴트',             icon:'🐙', tags:['code'],    color:'#24292e' },
+      { name:'Windsurf',        url:'https://codeium.com/windsurf',             desc:'Codeium의 AI 통합 개발 환경',                icon:'🏄', tags:['code'],    color:'#00c8a0' },
+      { name:'Claude Code',     url:'https://claude.ai/code',                   desc:'터미널 기반 Anthropic AI 코딩 에이전트',     icon:'🔮', tags:['code'],    color:'#cc785c' },
+      { name:'Devin',           url:'https://devin.ai',                         desc:'완전 자율 AI 소프트웨어 엔지니어',            icon:'🤖', tags:['code'],    color:'#3b82f6' },
+      { name:'Streamlit',       url:'https://streamlit.io',                     desc:'Python으로 AI 앱을 빠르게 배포',             icon:'🎈', tags:['builder'], color:'#ff4b4b' },
+    ]
+  },
+  resource: {
+    label: 'AI 리소스', icon: '📚',
+    desc: '모델 허브, 커뮤니티, AI 기업·연구소 모음',
+    subs: {
+      all:       { label: '전체',      icon: '📋' },
+      hub:       { label: '모델 허브', icon: '🗄️' },
+      community: { label: '커뮤니티',  icon: '👥' },
+      company:   { label: 'AI 기업',   icon: '🏢' },
+    },
+    items: [
+      { name:'Hugging Face',     url:'https://huggingface.co',          desc:'세계 최대 AI 모델·데이터셋 허브',               icon:'🤗', tags:['hub','community'], color:'#ff9a00' },
+      { name:'GitHub',           url:'https://github.com',              desc:'코드 저장소 & AI 프로젝트 협업 플랫폼',         icon:'🐙', tags:['community'],       color:'#24292e' },
+      { name:'Ollama',           url:'https://ollama.com',              desc:'로컬 PC에서 LLM을 쉽게 실행',                  icon:'🦙', tags:['hub'],             color:'#1a1a1a' },
+      { name:'Papers With Code', url:'https://paperswithcode.com',      desc:'ML 논문과 구현 코드를 한곳에서',               icon:'📄', tags:['community'],       color:'#21cbce' },
+      { name:'Kaggle',           url:'https://kaggle.com',              desc:'데이터사이언스 경진대회 & 노트북',              icon:'🏆', tags:['community'],       color:'#20beff' },
+      { name:'OpenAI',           url:'https://openai.com',              desc:'ChatGPT · DALL-E · Sora 개발사',              icon:'🟢', tags:['company'],         color:'#10a37f' },
+      { name:'Anthropic',        url:'https://anthropic.com',           desc:'Claude AI 개발 AI 안전 연구 기업',             icon:'🔮', tags:['company'],         color:'#cc785c' },
+      { name:'Google DeepMind',  url:'https://deepmind.google',         desc:'Google 산하 세계 최고 AI 연구소',              icon:'🧠', tags:['company'],         color:'#4285f4' },
+      { name:'Mistral AI',       url:'https://mistral.ai',              desc:'유럽의 오픈 LLM 선도 기업',                    icon:'🌬️', tags:['company'],        color:'#ff7000' },
+      { name:'Together AI',      url:'https://together.ai',             desc:'오픈소스 모델 API·파인튜닝 플랫폼',            icon:'🤝', tags:['hub'],             color:'#6366f1' },
+    ]
+  }
+};
+
+let curCat = 'assistant';
+let curSub = 'all';
+let query  = '';
+
+const tagMap = { chat:'챗봇 / LLM', search:'검색 AI', image:'이미지 생성', music:'음악 생성', video:'영상 생성', builder:'UI / 앱 빌더', code:'코드 어시스턴트', hub:'모델 허브', community:'커뮤니티', company:'AI 기업' };
+
+// HTML 이스케이프 — innerHTML에 외부 데이터를 넣을 때 반드시 사용
+function esc(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// URL 화이트리스트 검증 — javascript: 등 위험 프로토콜 차단
+function safeUrl(url) {
+  try {
+    const u = new URL(url);
+    return (u.protocol === 'https:' || u.protocol === 'http:') ? url : '#';
+  } catch { return '#'; }
+}
+
+function countSub(cat, sub) {
+  if (sub === 'all') return data[cat].items.length;
+  return data[cat].items.filter(i => i.tags.includes(sub)).length;
+}
+
+function renderSidebar() {
+  const subs = data[curCat].subs;
+  const sidebar = document.getElementById('sidebar');
+  sidebar.innerHTML = '';
+
+  const label = document.createElement('div');
+  label.className = 'side-label';
+  label.textContent = data[curCat].label;
+  sidebar.appendChild(label);
+
+  Object.entries(subs).forEach(([k, v]) => {
+    const btn = document.createElement('button');
+    btn.className = 'side-btn' + (curSub === k ? ' active' : '');
+    btn.dataset.sub = k;
+
+    const iconSpan = document.createElement('span');
+    iconSpan.textContent = v.icon;
+    const labelSpan = document.createElement('span');
+    labelSpan.textContent = v.label;
+    const countSpan = document.createElement('span');
+    countSpan.className = 'side-count';
+    countSpan.textContent = countSub(curCat, k);
+
+    btn.append(iconSpan, labelSpan, countSpan);
+    btn.addEventListener('click', () => { curSub = k; render(); });
+    sidebar.appendChild(btn);
+  });
+}
+
+function renderHeader() {
+  document.getElementById('section-title').textContent = `${data[curCat].icon} ${data[curCat].label}`;
+  document.getElementById('section-desc').textContent  = data[curCat].desc;
+}
+
+function makeCard(item) {
+  const a = document.createElement('a');
+  a.className = 'card';
+  a.href = safeUrl(item.url);
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  a.style.setProperty('--card-color', /^#[0-9a-fA-F]{3,6}$/.test(item.color) ? item.color : '#6366f1');
+
+  const top = document.createElement('div');
+  top.className = 'card-top';
+
+  const iconDiv = document.createElement('div');
+  iconDiv.className = 'card-icon';
+  iconDiv.textContent = item.icon;
+
+  const info = document.createElement('div');
+  const name = document.createElement('div');
+  name.className = 'card-name';
+  name.textContent = item.name;
+  const urlDiv = document.createElement('div');
+  urlDiv.className = 'card-url';
+  urlDiv.textContent = item.url.replace('https://', '');
+  info.append(name, urlDiv);
+  top.append(iconDiv, info);
+
+  const desc = document.createElement('div');
+  desc.className = 'card-desc';
+  desc.textContent = item.desc;
+
+  const tags = document.createElement('div');
+  tags.className = 'card-tags';
+  item.tags.forEach(t => {
+    const span = document.createElement('span');
+    span.className = 'tag';
+    span.textContent = tagMap[t] || t;
+    tags.appendChild(span);
+  });
+
+  const arrow = document.createElement('span');
+  arrow.className = 'card-arrow';
+  arrow.textContent = '↗';
+
+  a.append(top, desc, tags, arrow);
+  return a;
+}
+
+function renderCards() {
+  let items = data[curCat].items;
+  if (curSub !== 'all') items = items.filter(i => i.tags.includes(curSub));
+  if (query) items = items.filter(i =>
+    i.name.toLowerCase().includes(query) || i.desc.toLowerCase().includes(query));
+
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  if (!items.length) {
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.style.gridColumn = '1 / -1';
+    const emoji = document.createElement('span');
+    emoji.textContent = '😕';
+    const msg = document.createTextNode('검색 결과가 없습니다.');
+    empty.append(emoji, msg);
+    grid.appendChild(empty);
+    return;
+  }
+  items.forEach(item => grid.appendChild(makeCard(item)));
+}
+
+function render() {
+  renderSidebar();
+  renderHeader();
+  renderCards();
+  document.querySelectorAll('.top-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.cat === curCat));
+}
+
+document.querySelectorAll('.top-btn').forEach(b =>
+  b.addEventListener('click', () => { curCat = b.dataset.cat; curSub = 'all'; render(); }));
+
+document.getElementById('search').addEventListener('input', e => {
+  query = e.target.value.toLowerCase().trim(); renderCards(); });
+
+render();
+</script>
+</body>
+</html>
