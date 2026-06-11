@@ -134,6 +134,7 @@
   <button class="top-btn" data-cat="productivity">⚡ <span class="label">AI 생산성</span></button>
   <button class="top-btn" data-cat="resource">📚 <span class="label">AI 리소스</span></button>
   <button class="top-btn" data-cat="course">🎓 <span class="label">AI 강의</span></button>
+  <button class="top-btn" data-cat="vibe">🌊 <span class="label">바이브 코딩</span></button>
 </header>
 
 <div class="layout">
@@ -150,7 +151,7 @@
 </div>
 
 <script>
-const UPDATED = '2026-06-11 (+100 · 강의)';
+const UPDATED = '2026-06-11 (+100 · 강의 · 바이브코딩)';
 
 const data = {
   assistant: {
@@ -420,6 +421,60 @@ const data = {
       { name:'Google AI Courses',     url:'https://ai.google/education/',                             desc:'Google 공식 AI 교육 — ML·생성 AI 무료 과정',               icon:'🔵', tags:['general'],  color:'#4285f4', isNew:true },
       { name:'Microsoft AI Learning', url:'https://learn.microsoft.com/en-us/ai/',                    desc:'Microsoft Learn AI 공식 학습 경로 모음',                   icon:'🪟', tags:['general'],  color:'#0078d4', isNew:true },
     ]
+  },
+  vibe: {
+    label: '바이브 코딩 스택', icon: '🌊',
+    desc: 'AI로 앱을 만드는 바이브 코딩 풀스택 — IDE · 앱 빌더 · AI 모델 · 배포 · UI 프레임워크',
+    subs: {
+      all:     { label: '전체',         icon: '📋' },
+      ide:     { label: 'AI IDE/에디터', icon: '🖥️' },
+      builder: { label: '앱 빌더',      icon: '🏗️' },
+      model:   { label: '코딩 AI 모델', icon: '🤖' },
+      deploy:  { label: '배포/인프라',  icon: '🚀' },
+      ui:      { label: 'UI/프레임워크', icon: '🎨' },
+    },
+    items: [
+      /* ── AI IDE / 에디터 ── */
+      { name:'Cursor',           url:'https://cursor.sh',                         desc:'바이브 코딩 1등 AI IDE — Agent·Composer·Tab 자동완성',     icon:'🖱️', tags:['ide'],     color:'#6366f1', isNew:true },
+      { name:'Windsurf',         url:'https://codeium.com/windsurf',              desc:'Cascade AI 흐름으로 코딩 — 바이브 코딩 핵심 에디터',       icon:'🏄', tags:['ide'],     color:'#00c8a0', isNew:true },
+      { name:'GitHub Copilot',   url:'https://github.com/features/copilot',       desc:'GitHub Agent 모드 — PR 자동 생성·코드 리뷰·테스트',        icon:'🐙', tags:['ide'],     color:'#24292e', isNew:true },
+      { name:'Claude Code',      url:'https://claude.ai/code',                    desc:'터미널 기반 AI 에이전트 — 전체 코드베이스 이해·수정',       icon:'🔮', tags:['ide'],     color:'#cc785c', isNew:true },
+      { name:'Zed',              url:'https://zed.dev',                           desc:'초고속 AI 네이티브 에디터 — Rust 기반 저지연 멀티플레이어', icon:'⚡', tags:['ide'],     color:'#1e293b', isNew:true },
+      { name:'VS Code + Copilot',url:'https://code.visualstudio.com',             desc:'AI 확장 생태계 최대 — GitHub Copilot·Cline·Continue',       icon:'💙', tags:['ide'],     color:'#007acc', isNew:true },
+      { name:'Void',             url:'https://voideditor.com',                    desc:'오픈소스 Cursor 대안 — 로컬 모델 연결 AI IDE',              icon:'🌑', tags:['ide'],     color:'#1e293b', isNew:true },
+      { name:'Cline',            url:'https://github.com/cline/cline',            desc:'VS Code AI 에이전트 확장 — 파일·터미널·브라우저 제어',      icon:'🤖', tags:['ide'],     color:'#6366f1', isNew:true },
+      /* ── 앱 빌더 ── */
+      { name:'Lovable',          url:'https://lovable.dev',                       desc:'자연어로 풀스택 React 앱 — 바이브 코딩 대표 플랫폼',        icon:'💖', tags:['builder'], color:'#ec4899', isNew:true },
+      { name:'Bolt.new',         url:'https://bolt.new',                          desc:'브라우저에서 즉시 풀스택 앱 빌드·배포 — StackBlitz 기반',   icon:'⚡', tags:['builder'], color:'#f59e0b', isNew:true },
+      { name:'V0',               url:'https://v0.dev',                            desc:'Vercel AI UI — shadcn 컴포넌트 자동 생성·Next.js 연동',     icon:'▲',  tags:['builder'], color:'#e2e8f0', isNew:true },
+      { name:'Replit Agent',     url:'https://replit.com/agent',                  desc:'자연어로 앱 생성 → 클라우드 즉시 배포',                     icon:'🔄', tags:['builder'], color:'#f26207', isNew:true },
+      { name:'StackBlitz',       url:'https://stackblitz.com',                    desc:'브라우저 Node.js 실행 — WebContainers 기반 즉시 개발환경',  icon:'⚡', tags:['builder'], color:'#1389fd', isNew:true },
+      { name:'CodeSandbox',      url:'https://codesandbox.io',                    desc:'브라우저 AI 클라우드 IDE — 즉시 공유·협업',                 icon:'📦', tags:['builder'], color:'#151515', isNew:true },
+      { name:'Tempo Labs',       url:'https://tempo.new',                         desc:'React 바이브 코딩 전용 AI 빌더',                            icon:'🎵', tags:['builder'], color:'#7c3aed', isNew:true },
+      /* ── 코딩 특화 AI 모델 ── */
+      { name:'Claude 3.7 Sonnet',url:'https://anthropic.com/claude',              desc:'코딩 벤치마크 1위 — 바이브 코딩 최고 추천 모델',            icon:'🔮', tags:['model'],   color:'#cc785c', isNew:true },
+      { name:'GPT-4.1',          url:'https://platform.openai.com',               desc:'OpenAI 코딩 특화 모델 — 100만 컨텍스트·Agentic 처리',       icon:'🟢', tags:['model'],   color:'#10a37f', isNew:true },
+      { name:'Gemini 2.5 Pro',   url:'https://ai.google.dev',                     desc:'Google 코딩 모델 — 1M 컨텍스트·무료 API 제공',             icon:'✨', tags:['model'],   color:'#4285f4', isNew:true },
+      { name:'DeepSeek Coder V2',url:'https://deepseek.com',                      desc:'오픈소스 코딩 특화 — 상용 모델 수준 무료 모델',             icon:'🐋', tags:['model'],   color:'#1e40af', isNew:true },
+      { name:'Qwen2.5 Coder',    url:'https://qwen.readthedocs.io',               desc:'Alibaba 코딩 특화 모델 — 32B 오픈소스 최고 성능',           icon:'🟠', tags:['model'],   color:'#ff6a00', isNew:true },
+      { name:'Codestral',        url:'https://codestral.mistral.ai',              desc:'Mistral 코딩 모델 — 80개 언어·32K 컨텍스트',               icon:'🐱', tags:['model'],   color:'#ff7000', isNew:true },
+      { name:'Groq (추론 가속)', url:'https://console.groq.com',                  desc:'LPU 칩 초고속 추론 — Llama·DeepSeek 2000 tok/s',           icon:'⚡', tags:['model'],   color:'#f97316', isNew:true },
+      /* ── 배포 / 인프라 ── */
+      { name:'Vercel',           url:'https://vercel.com',                        desc:'Next.js 최적 배포 플랫폼 — 바이브 코딩 표준 배포처',        icon:'▲',  tags:['deploy'],  color:'#000000', isNew:true },
+      { name:'Netlify',          url:'https://netlify.com',                       desc:'정적 사이트·풀스택 앱 배포 — 드래그&드롭 배포',             icon:'🟦', tags:['deploy'],  color:'#00c7b7', isNew:true },
+      { name:'Railway',          url:'https://railway.app',                       desc:'DB 포함 풀스택 앱 1분 배포',                                icon:'🚂', tags:['deploy'],  color:'#b91c1c', isNew:true },
+      { name:'Supabase',         url:'https://supabase.com',                      desc:'AI 앱 백엔드 — DB·Auth·Storage·벡터 DB 통합',              icon:'🟩', tags:['deploy'],  color:'#3ecf8e', isNew:true },
+      { name:'Neon',             url:'https://neon.tech',                         desc:'서버리스 Postgres — 바이브 코딩 앱 표준 DB',                icon:'🟢', tags:['deploy'],  color:'#00e599', isNew:true },
+      { name:'Cloudflare Pages', url:'https://pages.cloudflare.com',              desc:'글로벌 엣지 배포 — 무제한 무료 정적 사이트',                icon:'🟠', tags:['deploy'],  color:'#f6821f', isNew:true },
+      { name:'Render',           url:'https://render.com',                        desc:'Web Service·DB·Cron 통합 PaaS 배포',                        icon:'🌐', tags:['deploy'],  color:'#46e3b7', isNew:true },
+      /* ── UI / 프레임워크 ── */
+      { name:'shadcn/ui',        url:'https://ui.shadcn.com',                     desc:'바이브 코딩 표준 UI 라이브러리 — Tailwind+Radix 기반',      icon:'🎨', tags:['ui'],      color:'#1e293b', isNew:true },
+      { name:'Tailwind CSS',     url:'https://tailwindcss.com',                   desc:'유틸리티 퍼스트 CSS — AI 코드 생성 1순위 스타일링',          icon:'🌊', tags:['ui'],      color:'#38bdf8', isNew:true },
+      { name:'Next.js',          url:'https://nextjs.org',                        desc:'React 풀스택 프레임워크 — 바이브 코딩 앱 표준 구조',         icon:'▲',  tags:['ui'],      color:'#000000', isNew:true },
+      { name:'Vite',             url:'https://vitejs.dev',                        desc:'초고속 번들러 — React·Vue 바이브 코딩 로컬 개발',            icon:'⚡', tags:['ui'],      color:'#646cff', isNew:true },
+      { name:'Framer Motion',    url:'https://framer.com/motion',                 desc:'React 애니메이션 — AI 생성 UI 인터랙션 표준',                icon:'🎬', tags:['ui'],      color:'#0055ff', isNew:true },
+      { name:'Lucide Icons',     url:'https://lucide.dev',                        desc:'AI 생성 코드 표준 아이콘 라이브러리',                        icon:'✨', tags:['ui'],      color:'#f97316', isNew:true },
+    ]
   }
 };
 
@@ -430,9 +485,11 @@ let query  = '';
 const tagMap = {
   chat:'챗봇 / LLM', search:'검색 AI', agent:'AI 에이전트',
   image:'이미지 생성', music:'음악 생성', video:'영상 생성', voice:'음성 생성',
-  builder:'UI / 앱 빌더', code:'코드 어시스턴트', workflow:'워크플로우',
+  builder:'앱 빌더', code:'코드 어시스턴트', workflow:'워크플로우',
   writing:'글쓰기 / 문서', present:'발표 / 디자인', meeting:'회의 / 요약', learning:'학습 / 리서치',
   hub:'모델 허브', community:'커뮤니티', company:'AI 기업',
+  cursor:'Cursor', windsurf:'Windsurf', vscode:'VS Code', figma:'Figma', general:'종합 플랫폼',
+  ide:'AI IDE/에디터', model:'코딩 AI 모델', deploy:'배포/인프라', ui:'UI/프레임워크',
 };
 
 // HTML 이스케이프 — innerHTML에 외부 데이터를 넣을 때 반드시 사용
