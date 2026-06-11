@@ -151,8 +151,12 @@
     .item-row-url  { flex: 1.5; font-size: .72rem; color: var(--text-muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .item-row-cat  { font-size: .7rem; padding: 2px 8px; background: rgba(99,102,241,.15); color: var(--accent2); border-radius: 20px; white-space: nowrap; }
     .badge-custom  { font-size: .65rem; padding: 2px 7px; background: rgba(245,158,11,.15); color: #f59e0b; border-radius: 20px; }
-    .btn-del { padding: 4px 12px; background: rgba(239,68,68,.12); color: #ef4444; border: 1px solid rgba(239,68,68,.28); border-radius: 6px; font-size: .78rem; cursor: pointer; flex-shrink: 0; }
-    .btn-del:hover { background: rgba(239,68,68,.28); }
+    .btn-del  { padding: 4px 12px; background: rgba(239,68,68,.12); color: #ef4444; border: 1px solid rgba(239,68,68,.28); border-radius: 6px; font-size: .78rem; cursor: pointer; flex-shrink: 0; }
+    .btn-del:hover  { background: rgba(239,68,68,.28); }
+    .btn-edit { padding: 4px 12px; background: rgba(99,102,241,.12); color: var(--accent2); border: 1px solid rgba(99,102,241,.28); border-radius: 6px; font-size: .78rem; cursor: pointer; flex-shrink: 0; margin-right: 4px; }
+    .btn-edit:hover { background: rgba(99,102,241,.28); }
+    .edit-back { display: inline-flex; align-items: center; gap: 6px; background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 6px 14px; border-radius: 8px; font-size: .85rem; cursor: pointer; margin-bottom: 16px; }
+    .edit-back:hover { background: var(--surface2); color: var(--text); }
     .form-label { font-size: .78rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
     .form-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
     .form-row   { margin-bottom: 12px; }
@@ -753,26 +757,36 @@ document.getElementById('pass-input').addEventListener('keydown', e => { if (e.k
 document.getElementById('admin-close').addEventListener('click', () => adminOverlay.classList.remove('open'));
 
 // ── ADMIN TABS ────────────────────────────────────────────────────────────────
-let adminTab = 'list';
+let adminTab   = 'list';
+let editTarget = null;  // { item, catKey }
+
+function setAdminTab(tab) {
+  adminTab = tab;
+  const editBtn = document.getElementById('edit-tab-btn');
+  if (editBtn) editBtn.style.display = tab === 'edit' ? '' : 'none';
+  document.querySelectorAll('.admin-tab').forEach(x => x.classList.toggle('active', x.dataset.tab === tab));
+  renderAdminBody();
+}
+
 document.querySelectorAll('.admin-tab').forEach(t =>
   t.addEventListener('click', () => {
-    adminTab = t.dataset.tab;
-    document.querySelectorAll('.admin-tab').forEach(x => x.classList.toggle('active', x.dataset.tab === adminTab));
-    renderAdminBody();
+    if (t.dataset.tab === 'edit' && !editTarget) return;
+    setAdminTab(t.dataset.tab);
   }));
 
 function openAdmin() {
-  adminTab = 'list';
-  document.querySelectorAll('.admin-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'list'));
+  editTarget = null;
+  setAdminTab('list');
   adminOverlay.classList.add('open');
-  renderAdminBody();
 }
 
 // ── ADMIN BODY ────────────────────────────────────────────────────────────────
 function renderAdminBody() {
   const body = document.getElementById('admin-body');
   body.innerHTML = '';
-  adminTab === 'list' ? renderAdminList(body) : renderAdminAddForm(body);
+  if      (adminTab === 'list') renderAdminList(body);
+  else if (adminTab === 'edit') renderAdminEditForm(body);
+  else                          renderAdminAddForm(body);
 }
 
 function renderAdminList(body) {
@@ -822,6 +836,14 @@ function renderAdminList(body) {
         render();
       });
 
+      const editBtn = document.createElement('button');
+      editBtn.className = 'btn-edit';
+      editBtn.textContent = '수정';
+      editBtn.addEventListener('click', () => {
+        editTarget = { item, catKey };
+        setAdminTab('edit');
+      });
+
       row.append(ico, nameEl, urlEl, catEl);
       if (item._custom) {
         const badge = document.createElement('span');
@@ -829,7 +851,7 @@ function renderAdminList(body) {
         badge.textContent = '추가됨';
         row.appendChild(badge);
       }
-      row.appendChild(delBtn);
+      row.append(editBtn, delBtn);
       body.appendChild(row);
     });
   });
@@ -838,6 +860,107 @@ function renderAdminList(body) {
   stats.className = 'admin-stats';
   stats.textContent = '총 ' + count + '개 서비스';
   body.appendChild(stats);
+}
+
+function renderAdminEditForm(body) {
+  if (!editTarget) { setAdminTab('list'); return; }
+  const { item, catKey } = editTarget;
+
+  // ← 목록으로 버튼
+  const backBtn = document.createElement('button');
+  backBtn.className = 'edit-back';
+  backBtn.innerHTML = '← 목록으로';
+  backBtn.addEventListener('click', () => { editTarget = null; setAdminTab('list'); });
+  body.appendChild(backBtn);
+
+  // 현재 카테고리 미리선택된 options
+  const catOptions = Object.entries(data)
+    .map(([k, v]) => '<option value="' + esc(k) + '"' + (k === catKey ? ' selected' : '') + '>' + esc(v.label) + '</option>').join('');
+
+  const wrap = document.createElement('div');
+
+  // 이름 + 아이콘
+  const g1 = document.createElement('div'); g1.className = 'form-grid2';
+  [['e-name','서비스 이름 *', item.name], ['e-icon','아이콘 이모지', item.icon || '🔗']].forEach(([id, label, val]) => {
+    const div = document.createElement('div');
+    const lbl = document.createElement('label'); lbl.className = 'form-label'; lbl.textContent = label;
+    const inp = document.createElement('input'); inp.className = 'form-input'; inp.type = 'text'; inp.id = id; inp.value = val;
+    div.append(lbl, inp); g1.appendChild(div);
+  });
+  wrap.appendChild(g1);
+
+  // URL
+  const r2 = document.createElement('div'); r2.className = 'form-row';
+  const l2 = document.createElement('label'); l2.className = 'form-label'; l2.textContent = 'URL *';
+  const i2 = document.createElement('input'); i2.className = 'form-input'; i2.type = 'text'; i2.id = 'e-url'; i2.value = item.url;
+  r2.append(l2, i2); wrap.appendChild(r2);
+
+  // 설명
+  const r3 = document.createElement('div'); r3.className = 'form-row';
+  const l3 = document.createElement('label'); l3.className = 'form-label'; l3.textContent = '설명 *';
+  const i3 = document.createElement('input'); i3.className = 'form-input'; i3.type = 'text'; i3.id = 'e-desc'; i3.value = item.desc;
+  r3.append(l3, i3); wrap.appendChild(r3);
+
+  // 카테고리 + 색상
+  const g2 = document.createElement('div'); g2.className = 'form-grid2';
+  const div4 = document.createElement('div');
+  const l4 = document.createElement('label'); l4.className = 'form-label'; l4.textContent = '카테고리 *';
+  const sel = document.createElement('select'); sel.className = 'form-input'; sel.id = 'e-cat'; sel.innerHTML = catOptions;
+  div4.append(l4, sel);
+  const div5 = document.createElement('div');
+  const l5 = document.createElement('label'); l5.className = 'form-label'; l5.textContent = '색상 (HEX)';
+  const i5 = document.createElement('input'); i5.className = 'form-input'; i5.type = 'text'; i5.id = 'e-color'; i5.value = item.color || '#6366f1';
+  div5.append(l5, i5);
+  g2.append(div4, div5); wrap.appendChild(g2);
+
+  // 태그
+  const r6 = document.createElement('div'); r6.className = 'form-row';
+  const l6 = document.createElement('label'); l6.className = 'form-label'; l6.textContent = '태그 (쉼표 구분)';
+  const i6 = document.createElement('input'); i6.className = 'form-input'; i6.type = 'text'; i6.id = 'e-tags'; i6.value = (item.tags || []).join(', ');
+  r6.append(l6, i6); wrap.appendChild(r6);
+
+  // 에러 + 저장 버튼
+  const errDiv = document.createElement('div'); errDiv.className = 'form-err'; errDiv.id = 'e-err';
+  const saveBtn = document.createElement('button'); saveBtn.className = 'btn-primary'; saveBtn.textContent = '✅ 수정 완료';
+  saveBtn.addEventListener('click', () => {
+    const name  = document.getElementById('e-name').value.trim();
+    const url   = document.getElementById('e-url').value.trim();
+    const desc  = document.getElementById('e-desc').value.trim();
+    const newCat= document.getElementById('e-cat').value;
+    const icon  = document.getElementById('e-icon').value.trim() || '🔗';
+    const color = /^#[0-9a-fA-F]{3,6}$/.test(document.getElementById('e-color').value.trim())
+                  ? document.getElementById('e-color').value.trim() : '#6366f1';
+    const tags  = document.getElementById('e-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+
+    if (!name || !url || !desc) { errDiv.textContent = '이름, URL, 설명은 필수입니다.'; return; }
+    if (!/^https?:\/\//.test(url)) { errDiv.textContent = 'URL은 https:// 로 시작해야 합니다.'; return; }
+
+    const oldKey = itemKey(item);
+
+    // 1) 기존 항목 삭제 처리
+    const del = loadDeleted();
+    if (!del.includes(oldKey)) { del.push(oldKey); localStorage.setItem(LS_DELETED, JSON.stringify(del)); }
+    if (item._custom) {
+      const filtered = loadCustom().filter(c => itemKey(c.item) !== oldKey);
+      localStorage.setItem(LS_CUSTOM, JSON.stringify(filtered));
+    }
+    data[catKey].items = data[catKey].items.filter(i => itemKey(i) !== oldKey);
+
+    // 2) 새 항목으로 등록
+    const newItem = { name, url, desc, icon, color, tags: tags.length ? tags : ['etc'], _custom: true, isNew: true };
+    const custom = loadCustom();
+    custom.push({ cat: newCat, item: newItem });
+    localStorage.setItem(LS_CUSTOM, JSON.stringify(custom));
+    data[newCat].items.push({ ...newItem });
+
+    alert('✅ "' + name + '"이(가) 수정되었습니다.');
+    editTarget = null;
+    render();
+    setAdminTab('list');
+  });
+
+  wrap.append(errDiv, saveBtn);
+  body.appendChild(wrap);
 }
 
 function renderAdminAddForm(body) {
@@ -911,9 +1034,7 @@ function renderAdminAddForm(body) {
 
     alert('✅ "' + name + '"이(가) 등록되었습니다.');
     render();
-    adminTab = 'list';
-    document.querySelectorAll('.admin-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'list'));
-    renderAdminBody();
+    setAdminTab('list');
   });
 
   wrap.append(errDiv, submitBtn);
@@ -946,6 +1067,7 @@ render();
     <div class="admin-tabs">
       <button class="admin-tab active" data-tab="list">📋 서비스 목록</button>
       <button class="admin-tab"        data-tab="add" >➕ 신규 등록</button>
+      <button class="admin-tab"        data-tab="edit" id="edit-tab-btn" style="display:none">✏️ 수정 중</button>
     </div>
     <div class="admin-body" id="admin-body"></div>
   </div>
