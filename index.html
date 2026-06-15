@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI 서비스 포털 — 2026</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <style>
     :root {
       --bg:#080b14; --surface:#111527; --surface2:#1a1f38;
@@ -964,20 +965,12 @@ document.querySelectorAll('.top-btn').forEach(btn => {
 document.querySelectorAll('.top-btn').forEach(b =>
   b.addEventListener('click', () => sfx.swoosh(), { capture: true }));
 
-// ── VISITOR COUNTER ──────────────────────────────────────────────────────────
-const VISIT_OFFSET = 7682453556;
-(async () => {
-  const el = document.getElementById('visitor-num');
-  try {
-    const r = await fetch('https://api.countapi.xyz/hit/kwpark0047-portal/v2');
-    const j = await r.json();
-    if (el) el.textContent = (VISIT_OFFSET + Number(j.value)).toLocaleString();
-  } catch {
-    if (el) el.textContent = VISIT_OFFSET.toLocaleString();
-  }
-})();
+// ── SUPABASE CLIENT ──────────────────────────────────────────────────────────
+const SB_URL = 'https://lynexsaojkhxzkkhdjvs.supabase.co';
+const SB_KEY = 'sb_publishable_jrWUfWkjxicCbSGS5M2XrA_IKIS8MCe';
+const sb = supabase.createClient(SB_URL, SB_KEY);
 
-// ── LOCALSTORAGE ─────────────────────────────────────────────────────────────
+// ── LOCALSTORAGE (offline fallback) ──────────────────────────────────────────
 const LS_CUSTOM  = 'portal_custom_v1';
 const LS_DELETED = 'portal_deleted_v1';
 const ADMIN_PASS = '0121';
@@ -986,7 +979,8 @@ const loadCustom  = () => JSON.parse(localStorage.getItem(LS_CUSTOM)  || '[]');
 const loadDeleted = () => JSON.parse(localStorage.getItem(LS_DELETED) || '[]');
 const itemKey     = item => item.name + '|' + item.url;
 
-function mergeCustomData() {
+// ── FALLBACK: localStorage-only merge ────────────────────────────────────────
+function mergeCustomDataLS() {
   const deleted = new Set(loadDeleted());
   Object.values(data).forEach(cat => {
     cat.items = cat.items.filter(item => !deleted.has(itemKey(item)));
@@ -995,7 +989,62 @@ function mergeCustomData() {
     if (data[cat]) data[cat].items.push({ ...item, isNew: true, _custom: true });
   });
 }
-mergeCustomData();
+
+// ── ASYNC MERGE from Supabase ─────────────────────────────────────────────────
+async function mergeCustomData() {
+  try {
+    const [{ data: delRows, error: e1 }, { data: custRows, error: e2 }] = await Promise.all([
+      sb.from('deleted_services').select('item_key'),
+      sb.from('custom_services').select('*').order('created_at')
+    ]);
+    if (e1 || e2) throw new Error('supabase fetch error');
+
+    const deleted = new Set((delRows || []).map(r => r.item_key));
+    loadDeleted().forEach(k => deleted.add(k));
+    localStorage.setItem(LS_DELETED, JSON.stringify([...deleted]));
+
+    Object.values(data).forEach(cat => {
+      cat.items = cat.items.filter(item => !deleted.has(itemKey(item)));
+    });
+
+    (custRows || []).forEach(row => {
+      const item = {
+        name: row.service_name, url: row.url, desc: row.description,
+        icon: row.icon || '🔗', color: row.color || '#6366f1',
+        tags: row.tags || ['etc'], isNew: true, _custom: true, _sbId: row.id
+      };
+      if (data[row.cat] && !data[row.cat].items.some(i => itemKey(i) === itemKey(item)))
+        data[row.cat].items.push(item);
+    });
+
+    loadCustom().forEach(({ cat, item }) => {
+      if (data[cat] && !data[cat].items.some(i => itemKey(i) === itemKey(item)))
+        data[cat].items.push({ ...item, isNew: true, _custom: true });
+    });
+  } catch {
+    mergeCustomDataLS();
+  }
+}
+
+// ── ASYNC INIT ────────────────────────────────────────────────────────────────
+async function init() {
+  // 방문자 카운터
+  const visEl = document.getElementById('visitor-num');
+  try {
+    const { data: row, error } = await sb.from('visitors').select('count').eq('id', 1).single();
+    if (error) throw error;
+    const next = Number(row.count) + 1;
+    await sb.from('visitors').update({ count: next }).eq('id', 1);
+    if (visEl) visEl.textContent = next.toLocaleString();
+  } catch {
+    if (visEl) visEl.textContent = (7682453556).toLocaleString();
+  }
+
+  await mergeCustomData();
+  render();
+}
+
+init();
 
 // ── PASSWORD MODAL ────────────────────────────────────────────────────────────
 const passOverlay  = document.getElementById('pass-overlay');
@@ -1098,15 +1147,22 @@ function renderAdminList(body) {
       delBtn.addEventListener('click', () => {
         if (!confirm('"' + item.name + '"을(를) 삭제하시겠습니까?')) return;
         sfx.pop();
+        const key = itemKey(item);
+
+        // Supabase 동기화
+        sb.from('deleted_services').insert({ item_key: key })
+          .then(({ error }) => { if (error && error.code !== '23505') console.warn('del sync:', error); });
+        if (item._custom && item._sbId)
+          sb.from('custom_services').delete().eq('id', item._sbId).catch(() => {});
+
+        // localStorage fallback
         const del = loadDeleted();
-        del.push(itemKey(item));
-        localStorage.setItem(LS_DELETED, JSON.stringify(del));
-        // 커스텀 항목이면 LS_CUSTOM에서도 제거
+        if (!del.includes(key)) { del.push(key); localStorage.setItem(LS_DELETED, JSON.stringify(del)); }
         if (item._custom) {
-          const custom = loadCustom().filter(c => itemKey(c.item) !== itemKey(item));
+          const custom = loadCustom().filter(c => itemKey(c.item) !== key);
           localStorage.setItem(LS_CUSTOM, JSON.stringify(custom));
         }
-        cat.items = cat.items.filter(i => itemKey(i) !== itemKey(item));
+        cat.items = cat.items.filter(i => itemKey(i) !== key);
         renderAdminBody();
         render();
       });
@@ -1212,7 +1268,16 @@ function renderAdminEditForm(body) {
 
     const oldKey = itemKey(item);
 
-    // 1) 기존 항목 삭제 처리
+    // Supabase 동기화: 기존 삭제 → 새 항목 삽입
+    sb.from('deleted_services').insert({ item_key: oldKey }).catch(() => {});
+    if (item._custom && item._sbId)
+      sb.from('custom_services').delete().eq('id', item._sbId).catch(() => {});
+    sb.from('custom_services').insert({
+      cat: newCat, service_name: name, url, description: desc, icon, color,
+      tags: tags.length ? tags : ['etc']
+    }).catch(() => {});
+
+    // localStorage 업데이트
     const del = loadDeleted();
     if (!del.includes(oldKey)) { del.push(oldKey); localStorage.setItem(LS_DELETED, JSON.stringify(del)); }
     if (item._custom) {
@@ -1221,7 +1286,6 @@ function renderAdminEditForm(body) {
     }
     data[catKey].items = data[catKey].items.filter(i => itemKey(i) !== oldKey);
 
-    // 2) 새 항목으로 등록
     const newItem = { name, url, desc, icon, color, tags: tags.length ? tags : ['etc'], _custom: true, isNew: true };
     const custom = loadCustom();
     custom.push({ cat: newCat, item: newItem });
@@ -1302,6 +1366,13 @@ function renderAdminAddForm(body) {
     if (!name || !url || !desc) { errDiv.textContent = '이름, URL, 설명은 필수입니다.'; return; }
     if (!/^https?:\/\//.test(url)) { errDiv.textContent = 'URL은 https:// 로 시작해야 합니다.'; return; }
 
+    // Supabase에 저장
+    sb.from('custom_services').insert({
+      cat, service_name: name, url, description: desc, icon, color,
+      tags: tags.length ? tags : ['etc']
+    }).catch(() => {});
+
+    // localStorage fallback
     const item = { name, url, desc, icon, color, tags: tags.length ? tags : ['etc'], _custom: true, isNew: true };
     const custom = loadCustom();
     custom.push({ cat, item });
@@ -1318,7 +1389,7 @@ function renderAdminAddForm(body) {
   body.appendChild(wrap);
 }
 
-render();
+// render()는 init() 안에서 Supabase 데이터 로드 후 호출됩니다.
 </script>
 
 <!-- 비밀번호 모달 -->
